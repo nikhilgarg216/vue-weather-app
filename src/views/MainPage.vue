@@ -25,51 +25,37 @@
     </div>
     <div class="p-2 container">
         <div class="row g-2">
-    <!-- Weather App Section -->
-    <div class="weather-app col-md-6 border bg rounded-3 text-white">
-        <div v-if="weather">
-            <img :src="weatherImage" alt="Weather Image" class="weather-image">
-            <h1>Weather in {{ weather.name }}</h1>
-            <p><strong>City:</strong> {{ weather.name }}</p>
-            <p><strong>Temperature:</strong> {{ weather.main.temp }} °C</p>
-            <p><strong>Weather:</strong> {{ weather.weather[0].description }}</p>
-            <p><strong>Humidity:</strong> {{ weather.main.humidity }}%</p>
-            <p><strong>Wind Speed:</strong> {{ weather.wind.speed }} m/s</p>
-        </div>
-    </div>
-
-    <!-- Weather in Indian Cities Section -->
-    <div class="col-md-6 weather-india border bg-light rounded-3 p-3 text-dark">
-        <h4>Weather in Indian Cities</h4>
-        <div class="row">
-            <div class="col-md-6 mb-3" v-for="(city, index) in indianCities" :key="index">
-                <div class="city-card border px-2 py-1 rounded">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div><strong>{{ city.name }}</strong></div>
-                        <div v-if="city.weather">{{ city.weather.main.temp }} °C</div>
-                        <div v-else>Loading...</div>
-                    </div>
-                    <p v-if="city.errorMessage" class="text-danger">{{ city.errorMessage }}</p>
+            <div class="text-center col-md-6 border bg rounded-3 text-white">
+                <div v-if="weather">
+                    <img :src="weatherImage" alt="Weather Image" class="weather-image">
+                    <h1>Weather in {{ weather.name }}</h1>
+                    <p><strong>City:</strong> {{ weather.name }}</p>
+                    <p><strong>Temperature:</strong> {{ weather.main.temp }} °C</p>
+                    <p><strong>Weather:</strong> {{ weather.weather[0].description }}</p>
+                    <p><strong>Humidity:</strong> {{ weather.main.humidity }}%</p>
+                    <p><strong>Wind Speed:</strong> {{ weather.wind.speed }} m/s</p>
                 </div>
             </div>
+
+            <IndiaCityCard :indianCities="indianCities" />
         </div>
-    </div>
-</div>
 
     </div>
 
 </template>
 
 <script>
+import IndiaCityCard from '@/components/IndiaCityCard.vue';
 import axios from 'axios';
 
 export default {
+    components: { IndiaCityCard },
     data() {
         return {
             city: '',
             weather: null,
             weatherImage: '',
-            indianCities: [], // List of Indian cities with their weather data
+            indianCities: [],
             apiKey: 'a7836ee53a020b00711ee5ead10d1b9f',
             filteredCities: [],
             errorMessage: '',
@@ -77,18 +63,17 @@ export default {
     },
     methods: {
         fetchCitySuggestions() {
-            if (this.city.length < 3) { // Only fetch suggestions for 3 or more characters
+            if (this.city.length < 1) { 
                 this.filteredCities = [];
-                this.errorMessage = ''; // Clear error message when typing
+                this.errorMessage = '';
                 return;
             }
 
-            const url = `https://api.openweathermap.org/data/2.5/find?q=${this.city}&appid=${this.apiKey}&units=metric`;
+            const url = `http://api.openweathermap.org/geo/1.0/direct?q=${this.city}&limit=5&appid=${this.apiKey}`;
 
-            axios
-                .get(url)
+            axios.get(url)
                 .then((response) => {
-                    this.filteredCities = response.data.list; // Update with API response
+                    this.filteredCities = response.data;
                 })
                 .catch((error) => {
                     console.error("Error fetching city suggestions:", error);
@@ -96,11 +81,11 @@ export default {
         },
         selectCity(cityName) {
             this.city = cityName;
-            this.filteredCities = []; // Clear suggestions after selecting
-            this.getWeatherByCity(); // Fetch weather for the selected city
+            this.filteredCities = []; 
+            this.getWeatherByCity(); 
         },
         getWeatherByCity() {
-            this.errorMessage = ''; // Reset error message before fetching new data
+            this.errorMessage = ''; 
             if (this.city) {
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${this.apiKey}&units=metric`;
                 axios
@@ -111,7 +96,7 @@ export default {
                     })
                     .catch((error) => {
                         console.error("Error fetching weather data:", error);
-                        this.errorMessage = 'City not found. Please try again.'; // Set error message on failure
+                        this.errorMessage = 'City not found. Please try again.';
                     });
             }
         },
@@ -138,6 +123,7 @@ export default {
                 'Vijayawada',
                 'Mysore',
                 'Patna',
+                'asd'
             ];
 
             this.indianCities = cities.map((city) => ({ name: city, weather: null, errorMessage: '' }));
@@ -199,6 +185,8 @@ export default {
                     this.weatherImage = '/img/images/mist.png';
                     break;
                 case 'clouds':
+                case 'overcast clouds':
+                case 'scattered clouds':
                     this.weatherImage = '/img/images/clouds.png';
                     break;
                 case 'rain':
@@ -224,7 +212,7 @@ export default {
     },
     mounted() {
         this.getCurrentLocationWeather();
-        this.getWeatherForIndianCities(); // Fetch weather for Indian cities on mount
+        this.getWeatherForIndianCities();
     },
 };
 </script>
@@ -235,14 +223,14 @@ export default {
 }
 
 .input-group {
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
     position: relative;
 }
 
 .list-group {
     position: absolute;
-    top: 20%;
+    top: 16%;
     left: 200;
     z-index: 100;
     max-height: 200px;
@@ -250,23 +238,5 @@ export default {
     background-color: white;
     color: black;
 }
-
-.weather-app {
-    text-align: center;
-   
-}
-
-.weather-india {
-    text-align: center;
-}
-
-.city-card {
-    background-color: #f8f9fa;
-    border: 1px solid #ced4da;
-}
-
-.weather-image {
-    max-width: 100%;
-    height: auto;
-}
+ 
 </style>
