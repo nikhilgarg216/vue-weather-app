@@ -63,7 +63,7 @@ export default {
     },
     methods: {
         fetchCitySuggestions() {
-            if (this.city.length < 1) {
+            if (this.city.length < 1) { 
                 this.filteredCities = [];
                 this.errorMessage = '';
                 return;
@@ -77,32 +77,23 @@ export default {
                     this.filteredCities = response.data;
                 })
                 .catch((error) => {
-                    if (error.response) {
-                        // The request was made and the server responded with a status code
-                        this.errorMessage = `Error: ${error.response.status} - ${error.response.statusText}`;
-                    } else if (error.request) {
-                        // The request was made but no response was received
-                        this.errorMessage = 'Network error. Please check your connection.';
-                    } else {
-                        // Something else happened in setting up the request
-                        this.errorMessage = 'An error occurred while fetching city suggestions.';
-                    }
                     console.error("Error fetching city suggestions:", error);
                 });
         },
         selectCity(cityName) {
             this.city = cityName;
-            this.filteredCities = [];
-            this.getWeatherByCity();
+            this.filteredCities = []; 
+            this.getWeatherByCity(); 
         },
         getWeatherByCity() {
-            this.errorMessage = '';
+            this.errorMessage = ''; 
             if (this.city) {
                 const url = `https://api.openweathermap.org/data/2.5/weather?q=${this.city}&appid=${this.apiKey}&units=metric`;
                 axios
                     .get(url)
                     .then((response) => {
                         this.weather = response.data;
+                        this.filteredCities = [];
                         this.setWeatherImage();
                     })
                     .catch((error) => {
@@ -249,4 +240,5 @@ export default {
     background-color: white;
     color: black;
 }
+ 
 </style>
